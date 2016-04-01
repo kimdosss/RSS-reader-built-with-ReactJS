@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<!--react js-->
+	<script src="build/react.js"></script>
+	<script src="build/react-dom.js"></script>
+    <script src="build/browser.min.js"></script>
+    <script src="build/jquery.min.js"></script>
+
+	<!--bootstrap-->
+	<meta charset="utf-8">
+  	<meta name="viewport" content="width=device-width, initial-scale=1">
+  	<link rel="stylesheet" href="bootstrap/css/bootstrap.min.css">
+  	<script src="bootstrap/js/bootstrap.min.js"></script>
+
+	<!--css-->
+	<link rel="stylesheet" href="css/RSS.css">
+	<title>RSS reader_ReactJS</title>
+
+
+</head>
+<body>
+<nav class="top_bar">
+	<ul class="top_bar_list top_bar_font">
+	<img class="logo" src="css/img/rss_logo.png">
+	    <a href="#/"><li class="top_bar_list_items top_bar_font">RSS Reader</li></a>
+	</ul>
+</nav>
+
+<div id="RSS">
+	<h3 class="error" style="position: absolute;top: 50%">If you see this message, that means your browser may not be compatible. Please open this page with Chrome in order to function properly.</h3>
+
+</div>
+
+<div class="footer">
+	<div class="footer_container footer_font">
+		<h4>RSS reader built with ReactJS</h4>
+	</div>
+</div>
+
+
+</body>
+
+<script type="text/babel">
+
+var RSSArea = React.createClass({
+	/*contains 3 main areas: 
+	1.RSSSearchArea for searching RSS website
+	2.RSSReadArea for displaying RSS news
+	3.RSSDisplayArea for loading selected news
+	*/
+	getInitialState: function() {
+	    return {
+	    	selected_RSS_website:'',
+	    	website_description:'',
+	    	website_provider:'',
+	    	isRSSSelected: false,
+	    	isNewsSelected: false,
+	    	showDescriptionBox: false,
+	    	showRSSArea: false,
+	    	RSSHeight:'',
+	    	displayWidth:''
+
+	    };
+	},
+
+
+	//resize the height of RSS reader and the width of display area
+ 	updateDimensions: function() {
+ 		var RSSHeight = $(window).height() - 100;
+ 		var displayWidth = $(window).width() - 250;
+        this.setState({RSSHeight: RSSHeight});
+        this.setState({displayWidth: displayWidth});
+
+    },
+    componentWillMount: function() {
+        this.updateDimensions();
+    },
+    componentDidMount: function() {
+        window.addEventListener("resize", this.updateDimensions);
+    },
+    componentWillUnmount: function() {
+        window.removeEventListener("resize", this.updateDimensions);
+    },
+
+
+	loadRSSWebsite: function(url){
+		//pass url by callback
+		this.setState({selected_RSS_website:url});
+		this.setState({isRSSSelected:true}, function(){
+			this.setState({showDescriptionBox:true,showRSSArea:true})
+		})
+		this.refs.RSS_read_area.loadRSSContents();
+	},
+
+	websiteInformation: function(title, description){
+		if (description.length == 0){
+			description = 'Description is not provided';
+		}
+		if (title.length == 0){
+			title = 'No informatoin is provided';
+		}
+		this.setState({website_provider:title, website_description:description})
+	},
+
+	isNewsSelected: function(url,title){
+		this.setState({isNewsSelected:true},function(){
+			this.setState({showRSSArea:false})
+		})		
+	},
+	showHideRSS: function(){		
+		this.setState({showRSSArea:!this.state.showRSSArea})
+	},
+	render:function(){
+	    return (
+	    	<div className = "RSS_read_container" style = {{height:this.state.RSSHeight}}>
+	    		<div className = "feed_control_panel">
+	    			<RSSSearchArea selectRSSWebsite = {this.loadRSSWebsite} showHideRSS = {this.showHideRSS} />	    	
+
+	    		
+	    			<div className ={this.state.showRSSArea ? "display" : "hidden"}>
+	    				<RSSReadArea getRSSUrl = {this.state.selected_RSS_website} websiteInformation = {this.websiteInformation} ref = "RSS_read_area" isNewsSelected = {this.isNewsSelected}/>
+	    			</div>
+	    			<div className ={this.state.showDescriptionBox ? "display" : "hidden"} >
+			    		<RSSDescriptionBox website_provider = {this.state.website_provider} website_description = {this.state.website_description} />
+			    	</div>
+	    			
+
+
+
+	    		</div>
+	    		<div className = "display_area" style = {{width:this.state.displayWidth}}>
+	    			<RSSDisplayArea />
+	    		</div>
+	    		
+	    	</div>
+	    )
+	}
+});
+
+/*--------------------------------------------------------------*/
+var DisplayListItems = React.createClass({
+	getInitialState: function() {
+	    return {
+	    	//hightlight selected item
+	    	selectedItem:''
+	    };
+	},
+
+	//feed back the information of selected item  
+	feedBackInformation: function(url,title) {
+		this.props.feedBackInformation(url,title);
+		this.setState({selectedItem:title})
+	},
+
+	render: function(){
+		var displayItems = this.props.input;
+		var self = this;
+		return (
+	    	<div className = "result_list">		    	
+		    	{
+			    	displayItems.map(function(data){
+			    		var boundClick = self.feedBackInformation.bind(self, data.url,data.title);
+			    		if(self.props.displayType == 'searchResults'){
+			    			return (						
+								<div className = {data.title ==  self.state.selectedItem ? "result_list_items font-result result_list_items-selected" : "result_list_items font-result"} key = {data.title} onClick = {boundClick}>
+									<span dangerouslySetInnerHTML = {{__html:data.title}}></span>
+
+								</div>						
+							)
+
+			    		}
+			    		if(self.props.displayType == 'RSSNews'){
+			    			return (						
+								<div className = {data.title ==  self.state.selectedItem ? "result_list_items font-result result_list_items-selected" : "result_list_items font-result"} key={data.title}>		
+									<a href ={data.link} target = "displayContainer" onClick = {boundClick}><h5 className ="font-RSS-title">{data.title}</h5></a>
+									<span className= "font-RSS-content">{data.contentSnippet}</span><br></br>
+									<span className = "font-RSS-date">Published date: {data.publishedDate}</span>							
+								</div>					
+							)
+			    		}
+
+						
+					})
+		    	}
+	    	</div>
+	    )
+	}
+
+})
+
+
+/*--------------------------------------------------------------*/
+var RSSDisplayArea = React.createClass({
+	render: function(){
+		return (
+			<iframe className = "newsContainer" name="displayContainer">
+
+			</iframe>
+		)
+	}
+})
+
+
+/*--------------------------------------------------------------*/
+var RSSReadArea = React.createClass({
+
+	getInitialState: function() {
+	    return {
+	    	loaded_url:'',
+	    	unfilteredContents:[],
+	    	filteredContents:[],
+	    	loading: true	
+	    };
+	},	
+
+
+	loadRSSContents: function() {
+
+		this.setState({loaded_url:this.props.getRSSUrl},function(){
+			var url = this.state.loaded_url;
+			var self = this;
+			$.ajax({
+				url:'https://ajax.googleapis.com/ajax/services/feed/load?v=1.0&num=50&q=' + encodeURIComponent(this.props.getRSSUrl),
+				jsonp: "callback",
+				dataType: "jsonp",
+				data: {      
+	        		format: "json"
+	    		},
+	    		success: function( response ) {
+	    			if (response.responseStatus == 200) {
+	    				var loadedContent = response.responseData.feed;
+		    			self.setState({ unfilteredContents: loadedContent.entries }); 
+		    			self.setState({ filteredContents: loadedContent.entries },function(){
+		    				//provide website informatoin
+		    				self.props.websiteInformation(loadedContent.title,loadedContent.description);
+		    			});
+		    			self.setState({loading:false});
+	    			} else{
+	    				alert('Feed service is not provided by this website, please select another one')
+	    			}  
+	    		},
+
+			});
+
+		})
+	},
+
+	FilterRSSResults: function(keyword){		
+        var filteredContent = this.state.unfilteredContents;
+	    filteredContent = filteredContent.filter(function(item){
+	    	return item.title.toLowerCase().match(keyword) || item.contentSnippet.toLowerCase().match(keyword);
+	    });
+        this.setState({filteredContents:filteredContent});         
+	},
+
+	isNewsSelected: function(url,title){
+		this.props.isNewsSelected(url,title);
+	},
+
+	render: function(){
+		return (
+			<div className = "RSS_read_area">
+				<p className="font-panel-title-1">Step 3:</p>
+				<p className="font-panel-title-2">Choose news: </p>
+				<FilterPanel FilterRSSResults = {this.FilterRSSResults} />
+				<span className = "label label-default">{this.state.filteredContents.length} items</span>
+				{
+					this.state.loading ? 
+					<h3 className = "loading"> Loading... </h3>:
+					<DisplayListItems input = {this.state.filteredContents} displayType = "RSSNews" feedBackInformation = {this.isNewsSelected}/>
+				}
+	    	</div>			
+		)
+	}
+});
+
+
+
+var FilterPanel = React.createClass({
+	//input and send back keywords for filter
+
+	getInitialState: function() {
+	    return {
+			filterKeyword:''
+	    };
+	},
+
+
+	filterRSSResults: function(e){
+		var filter_keyword = e.target.value.trim().toLowerCase();
+		this.setState({filterKeyword:filter_keyword})
+		this.props.FilterRSSResults(filter_keyword);
+	},
+	refreshFilter: function(){
+		var filter_keyword = '';
+		this.setState({filterKeyword:filter_keyword})
+		this.props.FilterRSSResults(filter_keyword);
+
+	},
+
+	render: function(){
+		return (
+			<div>
+				<input className = "search_RSS_panel btn btn-default btn-sm" placeholder = "Search News" value = {this.state.filterKeyword} onChange = {this.filterRSSResults}/>
+				<span className = "clear_RSS_search_button glyphicon glyphicon-refresh" onClick = {this.refreshFilter}></span>		
+			</div>
+		)
+	}
+})
+
+/*--------------------------------------------------------------*/
+var RSSSearchArea = React.createClass({
+	/*
+	main funciton: 1.display search results
+	2. send request by using ajax.
+	3. receive keywords
+	*/
+	getInitialState: function() {
+	    return {
+	    	keyword:'',
+	    	response:[],
+	    	outputResponse:[],
+	    	showHideButton: false,
+	    	showStep2: false,
+	    	loading:true
+	    };
+	},
+
+	startSearch: function(keyword){
+		//receive keyword from search panel and start searching
+		var self = this;		
+		$.ajax({
+			url:'https://ajax.googleapis.com/ajax/services/feed/find?v=1.0&num=50&q=' + encodeURIComponent(keyword),
+			jsonp: "callback",
+			dataType: "jsonp",
+			data: {      
+        		format: "json"
+    		},
+    		success: function( response ) {
+    			var loadedContent = response.responseData.entries;
+    			self.setState({ response: loadedContent }); 
+    			self.setState({ outputResponse: loadedContent });
+    			self.setState({ loading: false });
+    			
+
+    		}
+		});
+		this.setState({showStep2:true})
+	},
+
+	//pass selected RSS website from search area to RSS reader for loading RSS news
+	selectRSSWebsite: function(url, title){
+		this.props.selectRSSWebsite(url);
+
+		var outputResponse = this.state.response;
+	    outputResponse = outputResponse.filter(function(item){
+	    	return item.title.search(title)!==-1;
+	    	
+	    });
+        this.setState({outputResponse:outputResponse});  
+        this.setState({showHideButton:true});         
+
+	},
+
+	expandSearchResults: function(){
+		var outputResponse = this.state.response;
+		this.setState({outputResponse:outputResponse});
+	},
+	
+	showHideRSS: function(){
+		this.props.showHideRSS();
+	},
+	render: function(){
+		return (
+	    	<div className = "RSS_search_area">
+	    		<div className = "blocks">
+	    			<p className="font-panel-title-1">Step 1:</p>
+					<p className="font-panel-title-2">Search news website: </p>
+			    	<SearchPanel startSearch = {this.startSearch} /> 	
+			    </div>				
+				<div className = {this.state.showStep2 ? "display blocks" : "hidden"}>
+				    <p className="font-panel-title-1">Step 2:</p>
+					<p className="font-panel-title-2">Select: </p>
+
+
+					{
+						this.state.loading ? 
+						<h3 className = "loading"> Loading... </h3>:
+						<div>
+							<div className = {this.state.showHideButton ? "display show_result_button-1" : "hidden"} onClick = {this.showHideRSS}>Show/Hide</div>
+						    <DisplayListItems input = {this.state.outputResponse} feedBackInformation = {this.selectRSSWebsite} displayType = 'searchResults' />
+						   	<button type="button" className="expand_button btn btn-default btn-sm" onClick = {this.expandSearchResults}>
+								<span className="glyphicon glyphicon-resize-vertical"></span>Expand
+							</button>
+						</div>
+
+					}
+
+	
+
+
+				</div>
+	    	</div>
+	    )
+	}
+})
+
+
+
+
+var SearchPanel = React.createClass({
+
+	//send back keyword for searching
+
+	getInitialState: function() {
+	    return {
+	    	keyword:'',
+	    };
+	},
+
+	getKeyword:function(e){
+		this.setState({keyword:e.target.value})
+	},
+	startSearch: function(){		
+		this.props.startSearch(this.state.keyword);		
+	},
+
+	render: function(){
+		return (
+			<div>				
+				<input className = "search_panel btn btn-default btn-sm" value = {this.state.keyword} onChange = {this.getKeyword} placeholder = "CNN"/> 
+				<button disabled = {this.state.keyword.length == 0} onClick = {this.startSearch} type="button" className="btn btn-default btn-sm">
+		          		<span className="glyphicon glyphicon-search"></span> Search 
+		        </button>
+			</div>
+		)
+	}
+
+})
+
+/*--------------------------------------------------------------*/
+var RSSDescriptionBox = React.createClass({
+
+	render: function(){
+		return (
+
+			<div className="description_box blocks description_font">
+				<div className="panel panel-default">
+					<div className="panel-heading bg_color_1"><b>provided by:</b></div>
+					<div className="panel-body">{this.props.website_provider}</div>	
+					<div className="panel-heading"><b>description:</b></div>
+					<div className="panel-body">{this.props.website_description}</div>	
+				</div>	
+			</div>
+
+		)
+	}
+})
+
+/*--------------------------------------------------------------*/
+
+ReactDOM.render(
+	<RSSArea />,
+	document.getElementById('RSS')
+)
+
+
+</script>
+
+</html>

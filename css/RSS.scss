@@ -1,0 +1,222 @@
+@import 'color';
+@import 'font';
+@import 'animation';
+
+
+/* top bar */
+$topbarHeight : 53px;
+.top_bar{
+	position: fixed;
+	left: 0;
+	margin: 0;
+	width: 100%;
+	height: $topbarHeight;
+	z-index: 10;
+	background: $main_color-1;
+	border-bottom: 5px $main_color-2 solid;
+	box-shadow: 10px 2px 50px 1px rgba(0,0,0,0.3);
+
+	.logo{
+		width: 30px;
+		height: 30px;
+		margin: 0 10px;
+	}
+	.top_bar_list {
+    margin: 0 5px;
+    padding: 0;
+    list-style-type:none;
+
+		.top_bar_list_items{
+			display: inline-block;
+		    padding: 12px 20px;
+		    @include transition(0.5s);
+		    .top_bar_list_items p{
+		    	margin: 0;
+		    }
+		}
+
+		.top_bar_list_items:hover {
+			background: $main_color-4;
+			color: #000;
+			border-radius: 0.5em;
+			padding: 12px 30px;
+		}
+
+		.top_bar_list_items:after {
+			bottom: -5px;
+		    content: "";
+		    display: block;
+		    height: 3px;
+		    left: 50%;			/*start position*/
+		    position: relative;
+		    background: $main_color-1;	/*color*/
+		    @include transition-topbar( width .5s ease 0s, left .5s ease 0s);    /* ease in and out the subline*/	    
+		    width: 0px;			/*initial width of subline*/
+		}
+
+		.top_bar_list_items:hover:after {
+		    width: 100%;
+		    left: 0
+		}
+
+		.top_bar_list_items_selected{
+			background: $main_color-4;
+			color: $main_color-1;
+			border-radius: 0.5em;
+			padding: 12px 30px;
+		}
+	}
+}
+
+/* main area */
+
+
+.blocks{
+	padding: 10px 0;
+	border-bottom:1px $main_color-5 solid;
+}
+
+
+
+.RSS_read_container{
+	position: relative;
+	top:$topbarHeight;	
+	width: 100%;
+	background: $main_color-1;
+
+
+	.feed_control_panel{	
+		background: $main_color-1;
+		display: block;
+		float: left;
+		margin: 0;
+		padding: 20px 15px;
+		width: 250px;
+		max-width: 350px;
+		overflow-y: scroll;
+		overflow-x: auto;
+		height: 100%;
+
+
+		.search_panel{
+			margin-right: 5px;
+			width: 120px;
+		}
+
+		.RSS_search_area{	
+
+			.expand_button{
+				position: relative;
+				left: 122px;
+				font-weight: 600;
+
+			}	
+			
+
+		}
+	}
+	.RSS_read_area{
+		background: $main_color-1;
+		position: absolute;
+		display: block;
+		margin: 0;
+		padding: 20px;
+		left: 250px;
+		top:0;	
+		width: 300px;
+		max-width: 500px;
+		height: 100%;
+		overflow-y: scroll;
+		overflow-x:auto;
+		resize: horizontal;
+		z-index: 1;
+		box-shadow: 10px 8px 50px 5px rgba(0,0,0,0.3);
+		@include transition(2s);
+
+		.search_RSS_panel{
+
+			width: 200px;
+		}
+		.clear_RSS_search_button{
+			padding: 5px;
+			color: $font_color;
+			cursor:pointer;
+		}
+	}
+	.display_area{
+		position: relative;
+		display: block;
+		float: left;
+		padding: 0;
+		margin: 0;	
+		z-index: 0;
+		height: 100%;
+		background: whitesmoke;
+		.newsContainer{
+			width: 100%;
+			height: 100%
+		}
+	}
+
+	.result_list{
+		background: whitesmoke;
+		padding:0;
+		margin: 10px 5px 5px 0;
+		.result_list_items{
+			padding:8px 15px;
+			margin: 0;
+			word-wrap: break-word;
+			border-bottom:1px $main_color-5 solid;
+			border-left:5px whitesmoke solid;
+			list-style-type:none;
+		}
+		.result_list_items:hover{
+			border-left:5px $main_color-3 solid;
+		}
+
+		.result_list_items-selected{
+			border-left:5px $main_color-2 solid;
+		}
+	}
+}
+
+
+
+.show_result_button-1{
+	position: relative;
+	width: 80px;
+	height: 30px;
+	padding: 7px;
+	top: -40px;
+	left: 120px;
+	border-radius: 0.3em;
+	display: block;
+	color: #555;
+	font-size: 90%;
+	font-weight: 500;
+	cursor:pointer;
+	background:whitesmoke;
+	text-align: center;
+	font-weight: 600;
+
+}
+
+.footer{
+	position: absolute;
+	height: 50px;
+	width: 100%;
+	background: black;
+	bottom:0;
+	.footer_container{
+		width: 500px;
+		margin: auto;
+		text-align: center;
+	}
+}
+
+
+.loading{
+	color: $font_color;
+	text-align: center;
+}
+

@@ -1,0 +1,18 @@
+@mixin transition-topbar($trans1 ,$trans2) {
+	transition: $trans1 , $trans2;
+	-webkit-transition: $trans1 , $trans2;
+}
+
+@mixin transition($trans) {
+	transition: $trans;
+	-webkit-transition: $trans;
+}
+
+.display{
+	opacity: 1;
+}
+
+
+.hidden{
+	opacity: 0;
+}
